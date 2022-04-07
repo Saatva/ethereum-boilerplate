@@ -4,22 +4,20 @@ import {
   Card,
   Image,
   Tooltip,
-  Modal,
-  Input,
+  // Modal,
+  // Input,
   Skeleton,
   Typography,
   Button,
 } from "antd";
 import {
   FileSearchOutlined,
-  SendOutlined,
+  // SendOutlined,
   CloudDownloadOutlined,
 } from "@ant-design/icons";
 import { getExplorer } from "helpers/networks";
 import AddressInput from "./AddressInput";
 import { useVerifyMetadata } from "hooks/useVerifyMetadata";
-import ResumeImageGenerator from "./ResumeImageGenerator/ResumeImageGenerator";
-import saatvaLogo from "./ResumeImageGenerator/assets/saatva-logo-letter.jpeg";
 
 const { Meta } = Card;
 const { Text } = Typography;
@@ -39,48 +37,48 @@ const styles = {
 
 function NFTBalance() {
   const { getNFTBalances, data: NFTBalances } = useNFTBalances();
-  const { Moralis, chainId } = useMoralis();
-  const [visible, setVisibility] = useState(false);
-  const [receiverToSend, setReceiver] = useState(null);
-  const [amountToSend, setAmount] = useState(null);
-  const [nftToSend, setNftToSend] = useState(null);
-  const [isPending, setIsPending] = useState(false);
+  const { chainId } = useMoralis();
+  // const [visible, setVisibility] = useState(false);
+  // const [receiverToSend, setReceiver] = useState(null);
+  // const [amountToSend, setAmount] = useState(null);
+  // const [nftToSend, setNftToSend] = useState(null);
+  // const [isPending, setIsPending] = useState(false);
   const [address, setAddress] = useState();
   const { verifyMetadata } = useVerifyMetadata();
 
-  async function transfer(nft, amount, receiver) {
-    console.log(nft, amount, receiver);
-    const options = {
-      type: nft?.contract_type?.toLowerCase(),
-      tokenId: nft?.token_id,
-      receiver,
-      contractAddress: nft?.token_address,
-    };
+  // async function transfer(nft, amount, receiver) {
+  //   console.log(nft, amount, receiver);
+  //   const options = {
+  //     type: nft?.contract_type?.toLowerCase(),
+  //     tokenId: nft?.token_id,
+  //     receiver,
+  //     contractAddress: nft?.token_address,
+  //   };
 
-    if (options.type === "erc1155") {
-      options.amount = amount ?? nft.amount;
-    }
+  //   if (options.type === "erc1155") {
+  //     options.amount = amount ?? nft.amount;
+  //   }
 
-    setIsPending(true);
+  //   setIsPending(true);
 
-    try {
-      const tx = await Moralis.transfer(options);
-      console.log(tx);
-      setIsPending(false);
-    } catch (e) {
-      alert(e.message);
-      setIsPending(false);
-    }
-  }
+  //   try {
+  //     const tx = await Moralis.transfer(options);
+  //     console.log(tx);
+  //     setIsPending(false);
+  //   } catch (e) {
+  //     alert(e.message);
+  //     setIsPending(false);
+  //   }
+  // }
 
-  const handleTransferClick = (nft) => {
-    setNftToSend(nft);
-    setVisibility(true);
-  };
+  // const handleTransferClick = (nft) => {
+  //   setNftToSend(nft);
+  //   setVisibility(true);
+  // };
 
-  const handleChange = (e) => {
-    setAmount(e.target.value);
-  };
+  // const handleChange = (e) => {
+  //   setAmount(e.target.value);
+  // };
 
   console.log("NFTBalances", NFTBalances);
   return (
@@ -116,7 +114,7 @@ function NFTBalance() {
 
               const nftTitle = (
                 <Tooltip title={`Token Address: ${nft.token_address}`}>
-                  {nft.name}
+                  {nft.name} ({nft.symbol})
                 </Tooltip>
               );
 
@@ -140,11 +138,6 @@ function NFTBalance() {
                       Start: {nft.metadata.start_date}
                       <br />
                       End: {nft.metadata.end_date}
-                      <ResumeImageGenerator
-                        startDate={nft.metadata.start_date}
-                        endDate={nft.metadata.end_date}
-                        logoImage={saatvaLogo}
-                      />
                     </p>
                   )}
                 </div>
@@ -171,9 +164,9 @@ function NFTBalance() {
                         }
                       />
                     </Tooltip>,
-                    <Tooltip title="Transfer NFT">
-                      <SendOutlined onClick={() => handleTransferClick(nft)} />
-                    </Tooltip>,
+                    // <Tooltip title="Transfer NFT">
+                    //   <SendOutlined onClick={() => handleTransferClick(nft)} />
+                    // </Tooltip>,
                   ]}
                   style={{
                     width: 240,
@@ -204,7 +197,7 @@ function NFTBalance() {
             })}
         </Skeleton>
       </div>
-      <Modal
+      {/* <Modal
         title={`Transfer ${nftToSend?.name || "NFT"}`}
         visible={visible}
         onCancel={() => setVisibility(false)}
@@ -219,7 +212,7 @@ function NFTBalance() {
             onChange={(e) => handleChange(e)}
           />
         )}
-      </Modal>
+      </Modal> */}
     </div>
   );
 }
