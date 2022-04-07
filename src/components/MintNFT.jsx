@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { Card, Typography, Input, Button } from "antd";
+import React, { useRef, useState } from "react";
+import { Card, Typography, Input, Button, Modal } from "antd";
 import AddressInput from "./AddressInput";
 import { useMoralis, useWeb3ExecuteFunction } from "react-moralis";
+import ResumeImageGenerator from "./ResumeImageGenerator/ResumeImageGenerator";
+// import saatvaLogo from "./ResumeImageGenerator/assets/saatva-logo-letter.jpeg";
 
 const { Text } = Typography;
 
@@ -34,10 +36,18 @@ export default function MintNFT() {
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
   const [file, setFile] = useState();
+  // const [modalVisible, setModalVisible] = useState();
+  // const [modalTitle, setModalTitle] = useState();
+  // const [modalDescription, setModalDescription] = useState();
+
+  const imageRef = useRef(null);
 
   const handleSubmit = async () => {
-    if (receiver && company && startDate && endDate && title) {
-      const moralisFile = new Moralis.File("companylogo.jpg", file);
+    console.log(imageRef.current.src);
+    if (receiver && company && startDate && endDate && title && file) {
+      const moralisFile = new Moralis.File("companylogo.jpg", {
+        base64: imageRef.current.src,
+      });
       await moralisFile.saveIPFS();
 
       const metadata = {
@@ -88,74 +98,137 @@ export default function MintNFT() {
       };
       contractProcessor.fetch({
         params: options,
-        onSuccess: () => console.log("Success!!!!!"),
+        onSuccess: (e) => {
+          Modal.success({
+            title: "Success!! NFT minted",
+            content: (
+              <>
+                <p>
+                  The transaction will take around 30 seconds to be completed
+                  then you will see the NFT in your wallet.
+                </p>
+                <a
+                  href={`https://rinkeby.etherscan.io/tx/${e.hash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View status on etherscan
+                </a>
+              </>
+            ),
+          });
+          // setModalTitle("");
+          // setModalVisible(true);
+        },
+        onError: (e) => {
+          Modal.error({
+            title: "NFT minting failed",
+            content: (
+              <>
+                <p>We are experiencing technical difficulties:</p>
+                <p style={{ color: "red" }}>
+                  <em>{e.error.message}</em>
+                </p>
+              </>
+            ),
+          });
+        },
+      });
+    } else {
+      Modal.warning({
+        title: "You're not done",
+        content: "Don't be lazy, fill in the form",
       });
     }
   };
 
   return (
-    <Card
-      style={styles.card}
-      title={
-        <>
-          📝 <Text strong>Add work experience</Text>
-        </>
-      }
-    >
-      <div style={styles.select}>
-        <div style={styles.textWrapper}>
-          <Text strong>Address:</Text>
-        </div>
-        <AddressInput autoFocus onChange={setReceiver} />
-      </div>
-      <div style={styles.select}>
-        <div style={styles.textWrapper}>
-          <Text strong>Company:</Text>
-        </div>
-        <Input size="large" onChange={(e) => setCompany(e.target.value)} />
-      </div>
-      <div style={styles.select}>
-        <div style={styles.textWrapper}>
-          <Text strong>Title:</Text>
-        </div>
-        <Input size="large" onChange={(e) => setTitle(e.target.value)} />
-      </div>
-      <div style={styles.select}>
-        <div style={styles.textWrapper}>
-          <Text strong>Start Date:</Text>
-        </div>
-        <Input
-          type="date"
-          size="large"
-          onChange={(e) => setStartDate(e.target.value)}
-        />
-      </div>
-      <div style={styles.select}>
-        <div style={styles.textWrapper}>
-          <Text strong>End Date:</Text>
-        </div>
-        <Input
-          type="date"
-          size="large"
-          onChange={(e) => setEndDate(e.target.value)}
-        />
-      </div>
-      <div style={styles.select}>
-        <div style={styles.textWrapper}>
-          <Text strong>File input:</Text>
-        </div>
-        <Input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      </div>
-      <Button
-        type="primary"
-        size="large"
-        // loading={isPending}
-        style={{ width: "100%", marginTop: "25px" }}
-        onClick={handleSubmit}
-        // disabled={!tx}
+    <>
+      <Card
+        style={styles.card}
+        title={
+          <>
+            📝 <Text strong>Add work experience</Text>
+          </>
+        }
       >
-        Mint Badge Experience💸
-      </Button>
-    </Card>
+        <div style={styles.select}>
+          <div style={styles.textWrapper}>
+            <Text strong>Address:</Text>
+          </div>
+          <AddressInput autoFocus onChange={setReceiver} />
+        </div>
+        <div style={styles.select}>
+          <div style={styles.textWrapper}>
+            <Text strong>Company:</Text>
+          </div>
+          <Input size="large" onChange={(e) => setCompany(e.target.value)} />
+        </div>
+        <div style={styles.select}>
+          <div style={styles.textWrapper}>
+            <Text strong>Title:</Text>
+          </div>
+          <Input size="large" onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div style={styles.select}>
+          <div style={styles.textWrapper}>
+            <Text strong>Start Date:</Text>
+          </div>
+          <Input
+            type="date"
+            size="large"
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </div>
+        <div style={styles.select}>
+          <div style={styles.textWrapper}>
+            <Text strong>End Date:</Text>
+          </div>
+          <Input
+            type="date"
+            size="large"
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </div>
+        <div style={styles.select}>
+          <div style={styles.textWrapper}>
+            <Text strong>File input:</Text>
+          </div>
+          <Input
+            type="file"
+            onChange={(e) => {
+              setFile(e.target.files[0]);
+              console.log(e);
+            }}
+          />
+        </div>
+        <ResumeImageGenerator
+          title={title}
+          startDate={startDate}
+          endDate={endDate}
+          logoImage={file}
+          imageId="nft-preview"
+          ref={imageRef}
+          imageStyle={{ margin: "20px auto 0", border: "1px solid #ddd" }}
+        />
+        <Button
+          type="primary"
+          size="large"
+          // loading={isPending}
+          style={{ width: "100%", marginTop: "25px" }}
+          onClick={handleSubmit}
+          // disabled={!tx}
+        >
+          Mint Badge Experience💸
+        </Button>
+      </Card>
+      {/* <Modal.info
+        title={modalTitle}
+        visible={modalVisible}
+        onOk={() => setModalVisible(false)}
+      >
+        <div>{modalDescription}</div>
+      </Modal.info> */}
+    </>
   );
 }

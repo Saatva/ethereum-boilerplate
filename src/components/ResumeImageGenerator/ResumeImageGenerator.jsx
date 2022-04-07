@@ -1,6 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 
-function ResumeImageGenerator({ startDate, endDate, logoImage }) {
+const ResumeImageGenerator = forwardRef(function ResumeImageGenerator(
+  { title, startDate, endDate, logoImage, imageId, imageStyle },
+  imageRef,
+) {
   console.log(`Building Resume Image for ${startDate} - ${endDate}`);
 
   const [canvas, setCanvas] = useState(null);
@@ -19,17 +22,19 @@ function ResumeImageGenerator({ startDate, endDate, logoImage }) {
   }, []);
 
   useEffect(() => {
-    if (canvasContext) {
+    if (canvasContext && logoImage) {
       const base_image = new Image();
-      base_image.src = logoImage;
-
+      base_image.src = URL.createObjectURL(logoImage);
+      canvasContext.clearRect(0, 0, canvas.width, canvas.height);
       base_image.onload = () => {
-        const lineHeight = 24;
+        console.log(base_image.height);
+        const lineHeight = 20;
+        const baseFont = `${lineHeight}px Helvetica`;
         const imageMargin = 24;
         const imageBaseWidth = canvasWidth - imageMargin;
         const imageHeight =
           (base_image.height / base_image.width) * imageBaseWidth;
-        const imageY = (canvasHeight - lineHeight * 3) / 2 - imageHeight / 2;
+        const imageY = (canvasHeight - lineHeight * 4) / 2 - imageHeight / 2;
         canvasContext.drawImage(
           base_image,
           imageMargin / 2,
@@ -38,12 +43,18 @@ function ResumeImageGenerator({ startDate, endDate, logoImage }) {
           imageHeight,
         );
 
-        const datesOffset = 24;
-        canvasContext.font = `${lineHeight}px Helvetica`;
+        const datesOffset = 0;
+        canvasContext.font = baseFont;
         canvasContext.textAlign = "center";
 
-        let x = canvasWidth / 2 - datesOffset;
-        let y = canvasHeight - lineHeight * 2;
+        let x = canvasWidth / 2;
+        let y = canvasHeight - lineHeight * 3 - 10;
+        canvasContext.fillStyle = "#444";
+        canvasContext.fillText(title, x, y);
+
+        canvasContext.font = `italic 18px Helvetica`;
+        x = canvasWidth / 2 - datesOffset;
+        y = canvasHeight - lineHeight * 2;
         canvasContext.fillStyle = "#45bf7a";
         canvasContext.fillText(startDate, x, y);
 
@@ -53,9 +64,10 @@ function ResumeImageGenerator({ startDate, endDate, logoImage }) {
         canvasContext.fillText(endDate, x, y);
 
         setCanvasURL(canvas.toDataURL());
+        URL.revokeObjectURL(base_image.src);
       };
     }
-  }, [canvasContext, canvas, endDate, startDate, logoImage]);
+  }, [canvasContext, canvas, endDate, startDate, title, logoImage]);
 
   return (
     <>
@@ -65,9 +77,9 @@ function ResumeImageGenerator({ startDate, endDate, logoImage }) {
         height={canvasHeight}
         style={{ display: "none" }}
       />
-      <img src={canvasURL} />
+      <img src={canvasURL} id={imageId} ref={imageRef} style={imageStyle} />
     </>
   );
-}
+});
 
 export default ResumeImageGenerator;
